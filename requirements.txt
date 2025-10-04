@@ -1,0 +1,14 @@
+numpy
+pandas
+gensim
+spacy
+nltk
+torch
+transformers
+langchain
+langchain_community
+langchain_core
+chromadb
+torch-geometric
+ragas
+sentence-transformers
