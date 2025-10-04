@@ -86,31 +86,6 @@ python Infer_Finetune_Model.py
 python RAG.py
 ```
 
-### 6.1 Minimal RAG (Windows-friendly)
-A lightweight script that indexes abstracts from `Paper QA RAG/abs_metadata.json` into a local Chroma DB and supports quick retrieval.
-
-Install extra dependency:
-
-```bash
-pip install -r requirements.txt
-```
-
-Build index (first run):
-
-```bash
-python rag_minimal.py index --metadata "../abs_metadata.json" --persist_dir "./chroma_db" --reset
-```
-
-Query:
-
-```bash
-python rag_minimal.py query --persist_dir "./chroma_db" --q "What is CP violation in phi decays?" --top_k 5
-```
-
-Notes:
-- Defaults to `sentence-transformers/all-MiniLM-L6-v2` for speed.
-- You can change the collection name via `--collection` and model via `--model`.
-
 ### 7. **Evaluation**
    Run eval.ipynb for RAG evaluation. You should provide your openai key.
 
