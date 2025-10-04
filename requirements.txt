@@ -4,6 +4,7 @@ gensim
 spacy
 nltk
 torch
+tqdm
 transformers
 langchain
 langchain_community
