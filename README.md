@@ -5,7 +5,7 @@ This repository contains a compact version of the codebase used in my project. I
 
 ## Contents
 
-- **`Topic Model/`**  
+- [**`src/topic_model/`**](src/topic_model/)  
   Scripts for training topic models (LDA, NMF) and saving the resulting models.
 
 - **`Co-author/`**  
