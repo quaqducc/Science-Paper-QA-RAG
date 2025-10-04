@@ -5,25 +5,25 @@ This repository contains a compact version of the codebase used in my project. I
 
 ## Contents
 
-- [**`src/topic_model/`**](src/topic_model/)  
+- [**`topic_model/`**](src/topic_model/)  
   Scripts for training topic models (LDA, NMF) and saving the resulting models.
 
-- **`Co-author/`**  
+- [**`Co-author/`**](src/co-author/)  
   Code for constructing co-author networks using topic model results, along with saved graph data.
 
 - **`SciQAG/`**  
   Code for generating and filtering QA pairs (modified from [SciQAG](https://github.com/MasterAI-EAM/SciQAG)).
 
-- **`GraphSAGE/`**  
+- [**`GraphSAGE/`**](src/citation_net/graphSAGE/)  
   Implementation of citation network construction and GraphSAGE-based graph embeddings.
 
-- **`Finetune Embedding/`**  
+- [**`Finetune Embedding/`**](src/citation_net/finetune_embedding_model/)    
   Scripts for fine-tuning a model to map from text embeddings to graph embeddings.
 
-- **`RAG.py`**  
+- [**`RAG.py`**](src/RAG.py/)  
   Main script for integrating retrieval-augmented generation (RAG), topic modeling, co-author and citation networks, and QA generation.
 
-- **`eval.ipynb`**  
+- [**`eval.ipynb`**](src/)  
   RAG evaluation using the [ragas](https://github.com/explodinggradients/ragas) library.
 
 - **`requirements.txt`**  
