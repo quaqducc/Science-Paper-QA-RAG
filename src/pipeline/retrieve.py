@@ -4,7 +4,7 @@ import numpy as np
 import chromadb
 from chromadb.config import Settings
 
-from .embeddings import FinetunedQuestionEmbedding
+from .embeddings import E5Encoder
 from .config import retrieval_cfg, paths
 
 
@@ -12,11 +12,12 @@ class ChromaRetriever:
     def __init__(self):
         self.client = chromadb.PersistentClient(path=paths.chroma_persist_dir, settings=Settings(anonymized_telemetry=False))
         self.collection = self.client.get_or_create_collection(name="papers")
-        self.encoder = FinetunedQuestionEmbedding()
+        self.encoder = E5Encoder("intfloat/e5-large-v2")
 
     def retrieve(self, query: str, top_k: int = None) -> Dict[str, Any]:
         if top_k is None:
             top_k = retrieval_cfg.top_k
+        # E5 expects instruction prefix; simplest: use plain question text
         qvec = self.encoder.encode([query])[0].astype(float).tolist()
         res = self.collection.query(query_embeddings=[qvec], n_results=top_k, include=["metadatas", "documents", "distances"])
         # Chroma returns lower distances for better matches with cosine; convert to similarity

@@ -50,6 +50,49 @@ class FinetunedQuestionEmbedding:
         return vec / norms
 
 
+# ===== E5 encoder (intfloat/e5-large-v2) with mean pooling =====
+
+class E5Encoder:
+    def __init__(self, model_name: str = "intfloat/e5-large-v2", max_length: int = 512):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name).to(self.device)
+        self.model.eval()
+        self.max_length = max_length
+
+    @staticmethod
+    def _mean_pool(last_hidden_state: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        mask = attention_mask.unsqueeze(-1).expand(last_hidden_state.size()).float()
+        summed = torch.sum(last_hidden_state * mask, dim=1)
+        counts = torch.clamp(mask.sum(dim=1), min=1e-9)
+        return summed / counts
+
+    def encode(self, texts: List[str]) -> np.ndarray:
+        enc = self.tokenizer(
+            texts,
+            return_tensors="pt",
+            truncation=True,
+            padding=True,
+            max_length=self.max_length,
+        )
+        enc = {k: v.to(self.device) for k, v in enc.items()}
+        with torch.no_grad():
+            outputs = self.model(**enc)
+            pooled = self._mean_pool(outputs.last_hidden_state, enc["attention_mask"]).cpu().numpy()
+        norms = np.linalg.norm(pooled, axis=1, keepdims=True) + 1e-9
+        return pooled / norms
+
+
+def normalize_seven_digit_id(arxiv_like_id: Any) -> str:
+    s = str(arxiv_like_id)
+    digits = ''.join(ch for ch in s if ch.isdigit())
+    if len(digits) == 0:
+        return s
+    if len(digits) < 7:
+        digits = digits.zfill(7)
+    return digits
+
+
 def load_precomputed_doc_embeddings() -> Tuple[List[str], np.ndarray]:
     """
     Load document embeddings from the finetuned CSV. We will treat the 'id' as document id (e.g., arXiv id)

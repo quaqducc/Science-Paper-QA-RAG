@@ -7,7 +7,8 @@ import chromadb
 from chromadb.config import Settings
 
 from .config import paths
-from .embeddings import load_precomputed_doc_embeddings
+from .embeddings import E5Encoder, normalize_seven_digit_id
+import pandas as pd
 
 
 def read_abs_metadata(abs_metadata_path: str) -> Dict[str, Dict[str, Any]]:
@@ -30,16 +31,25 @@ def build_chroma_collection():
     # Use a descriptive collection name
     collection = client.get_or_create_collection(name="papers", metadata={"hnsw:space": "cosine"})
 
-    # Load doc embeddings and metadata
-    doc_ids, doc_embeddings = load_precomputed_doc_embeddings()
+    # Load metadata
     meta_index = read_abs_metadata(paths.abs_metadata_path)
+
+    # Load the list of allowed IDs from the questions embeddings CSV (question-domain list)
+    # but we will compute DOC embeddings from abstracts with E5
+    try:
+        q_df = pd.read_csv(paths.finetuned_questions_embeddings_csv, usecols=["id"])  # just need ids
+        allowed_ids = set(normalize_seven_digit_id(i) for i in q_df["id"].astype(str).tolist())
+    except Exception:
+        allowed_ids = set(normalize_seven_digit_id(i) for i in meta_index.keys())
 
     documents: List[str] = []
     metadatas: List[Dict[str, Any]] = []
     ids: List[str] = []
 
-    for doc_id in doc_ids:
-        md = meta_index.get(str(doc_id))
+    for raw_id, md in meta_index.items():
+        norm_id = normalize_seven_digit_id(raw_id)
+        if norm_id not in allowed_ids:
+            continue
         if not md:
             # Skip docs not present in metadata
             continue
@@ -48,15 +58,14 @@ def build_chroma_collection():
         metadatas.append({
             "title": md.get("title", ""),
             "authors": md.get("authors", ""),
-            "doc_id": str(doc_id),
+            "doc_id": str(norm_id),
         })
-        ids.append(str(doc_id))
+        ids.append(str(norm_id))
 
-    # Align embeddings to filtered ids order
-    id_to_idx = {str(did): i for i, did in enumerate(doc_ids)}
-    embeds = []
-    for did in ids:
-        embeds.append(doc_embeddings[id_to_idx[did]].astype(float).tolist())
+    # Compute E5 embeddings for abstracts
+    encoder = E5Encoder("intfloat/e5-large-v2")
+    embeds_np = encoder.encode(documents)
+    embeds = embeds_np.astype(float).tolist()
 
     if len(ids) == 0:
         print("No overlapping docs between embeddings CSV and abs_metadata.json. Nothing to index.")
