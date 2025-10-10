@@ -6,6 +6,7 @@ from chromadb.config import Settings
 
 from .embeddings import E5Encoder
 from .config import retrieval_cfg, paths
+from .topics import infer_query_topic_vec_nmf
 
 
 class ChromaRetriever:
@@ -19,7 +20,14 @@ class ChromaRetriever:
             top_k = retrieval_cfg.top_k
         # E5 expects instruction prefix; simplest: use plain question text
         qvec = self.encoder.encode([query])[0].astype(float).tolist()
-        res = self.collection.query(query_embeddings=[qvec], n_results=top_k, include=["metadatas", "documents", "distances"])
+        where = None
+        if getattr(retrieval_cfg, "use_topic_prefilter", False):
+            try:
+                q_topic = int(np.argmax(infer_query_topic_vec_nmf(query, n_components=17)))
+                where = {"top_topic": q_topic}
+            except Exception:
+                where = None
+        res = self.collection.query(query_embeddings=[qvec], n_results=top_k, where=where, include=["metadatas", "documents", "distances"])
         # Chroma returns lower distances for better matches with cosine; convert to similarity
         ids = res.get("ids", [[]])[0]
         docs = res.get("documents", [[]])[0]

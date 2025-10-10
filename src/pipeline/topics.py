@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 
 import json
 import numpy as np
@@ -45,5 +45,12 @@ def infer_query_topic_vec_nmf(query: str, n_components: int = 17) -> np.ndarray:
     q_vec = W[-1]
     q_vec = q_vec / (np.linalg.norm(q_vec) + 1e-9)
     return q_vec
+
+
+def compute_top_topic_indices(doc_topic_vectors: Dict[str, np.ndarray]) -> Dict[str, int]:
+    top_topic: Dict[str, int] = {}
+    for did, vec in doc_topic_vectors.items():
+        top_topic[did] = int(np.argmax(vec))
+    return top_topic
 
 

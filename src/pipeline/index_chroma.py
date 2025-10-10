@@ -6,8 +6,9 @@ import numpy as np
 import chromadb
 from chromadb.config import Settings
 
-from .config import paths
+from .config import paths, indexing_cfg
 from .embeddings import E5Encoder, normalize_seven_digit_id
+from .topics import compute_nmf_topic_vectors, compute_top_topic_indices
 import pandas as pd
 
 
@@ -62,10 +63,21 @@ def build_chroma_collection():
         })
         ids.append(str(norm_id))
 
-    # Compute E5 embeddings for abstracts
+    # Compute E5 embeddings for abstracts (or later extend with PDF fulltext chunks)
     encoder = E5Encoder("intfloat/e5-large-v2")
     embeds_np = encoder.encode(documents)
     embeds = embeds_np.astype(float).tolist()
+
+    # Compute and attach top_topic to metadata for retrieval-time filtering
+    try:
+        doc_topic_vecs = compute_nmf_topic_vectors(n_components=17)
+        top_topic_map = compute_top_topic_indices(doc_topic_vecs)
+        for meta in metadatas:
+            did = meta["doc_id"]
+            meta["top_topic"] = int(top_topic_map.get(did, -1))
+    except Exception:
+        for meta in metadatas:
+            meta["top_topic"] = -1
 
     if len(ids) == 0:
         print("No overlapping docs between embeddings CSV and abs_metadata.json. Nothing to index.")

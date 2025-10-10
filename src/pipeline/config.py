@@ -28,6 +28,7 @@ class RetrievalCfg:
     gamma_graph: float = 0.2  # weight for graph/GraphSAGE proximity
     use_cross_encoder: bool = False
     cross_encoder_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    use_topic_prefilter: bool = True  # apply topic filter at retrieval-time (RAG stage)
 
 
 @dataclass
@@ -35,6 +36,14 @@ class TopicCfg:
     lda_model_path: str = "src/topic_model/model_lda_100_6.model"
     nmf_model_path: str = "src/topic_model/model_nmf_100_17.model"
     # Optional: we can compute topic vectors for abstracts on the fly
+
+
+@dataclass
+class IndexingCfg:
+    use_pdf_fulltext: bool = True
+    pdf_timeout_sec: int = 20
+    chunk_size_tokens: int = 512
+    chunk_overlap_tokens: int = 128
 
 
 @dataclass
@@ -48,5 +57,6 @@ embed_cfg = EmbeddingModelCfg()
 retrieval_cfg = RetrievalCfg()
 topic_cfg = TopicCfg()
 llm_cfg = LLMConfig()
+indexing_cfg = IndexingCfg()
 
 
