@@ -2,8 +2,6 @@ from typing import Dict, Any, List, Tuple
 
 import json
 import numpy as np
-from gensim.corpora import Dictionary
-from gensim.models import LdaModel
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import NMF
 
