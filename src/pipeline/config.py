@@ -8,7 +8,7 @@ class Paths:
         "src/citation_net/finetune_embedding_model/combined_doi_questions_embeddings.csv"
     )
     graphsage_embeddings_csv: str = "src/citation_net/graphSAGE/graphsage_embeddings.csv"
-    chroma_persist_dir: str = "data/chroma"
+    chroma_persist_dir: str = "src/vector_db/chroma_db"
 
 
 @dataclass

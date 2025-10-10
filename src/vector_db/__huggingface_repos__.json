@@ -1,0 +1,1 @@
+{"repos": [{"repoId": "intfloat/e5-large-v2", "repoType": "model", "commitHash": "f169b11e22de13617baa190a028a32f3493550b6", "filePaths": ["vocab.txt", "tokenizer.json", "config.json", "model.safetensors", "tokenizer_config.json", "special_tokens_map.json"]}]}
